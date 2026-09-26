@@ -1,1 +1,5 @@
-custom-tcp-server
+/custom-tcp-server
+.DS_Store
+.vscode/
+
+/bin/
