@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -59,17 +60,29 @@ func (s *Server) acceptLoop() {
 
 func (s *Server) readLoop(conn net.Conn) {
 	defer conn.Close()
+	if _, err := conn.Write([]byte("Connected. Type a message and press Enter.\r\n")); err != nil {
+		fmt.Println("write error", err)
+		return
+	}
+
 	buf := make([]byte, 2048)
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("read error", err)
+			if err != io.EOF {
+				fmt.Println("read error", err)
+			}
 			return
 		}
 
 		s.msgch <- Message{
 			from:    conn.RemoteAddr().String(),
 			payload: buf[:n],
+		}
+
+		if _, err := conn.Write([]byte("thank you for your message!\r\n")); err != nil {
+			fmt.Println("write error", err)
+			return
 		}
 	}
 }
